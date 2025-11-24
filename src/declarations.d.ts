@@ -10,6 +10,7 @@ export interface Client {
     metadata<T = any>(): Promise<Metadata<T>>;
     trigger(event: string, data?: any): void;
     instance(guid: string): Client;
+    context<T = any>(): Promise<T>;
 }
 
 export interface Metadata<T> {
@@ -52,22 +53,12 @@ export interface ITicket {
     readonly external_id?: string | null;
     readonly url?: string;
     readonly subject: string;
-    readonly raw_subject?: string;
     readonly description?: string;
     readonly status?: string;
     readonly type?: string;
     readonly priority?: string;
     readonly created_at?: string;
     readonly updated_at?: string;
-    readonly requester_id?: string | number;
-    readonly submitter_id?: string | number;
-    readonly assignee_id?: string | number | null;
-    readonly organization_id?: string | number | null;
-    readonly group_id?: string | number;
-    readonly collaborator_ids?: number[];
-    readonly follower_ids?: number[];
-    readonly email_cc_ids?: number[];
-    readonly forum_topic_id?: number | null;
     readonly problem_id?: number | null;
     readonly has_incidents?: boolean;
     readonly is_public?: boolean;

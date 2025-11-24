@@ -1,11 +1,10 @@
+# ──────────────
+# General Project
+# ──────────────
 /gitignore
 config.json
 export.json
 .DS_Store
-
-# ──────────────
-# Projekt-spezifisch
-# ──────────────
 
 # IDE & Editor
 .idea/
@@ -22,7 +21,7 @@ ENV/
 env.bak/
 venv.bak/
 
-# Exporte (Backups, Migration)
+# Exports (Backups, Migration)
 get_zd_config_data_exports/
 **/get_zd_config_data_exports/
 exports/
@@ -31,7 +30,6 @@ exports/
 # ──────────────
 # Python Standard
 # ──────────────
-
 __pycache__/
 *.py[codz]
 *$py.class
@@ -176,3 +174,64 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# ──────────────
+# Node.js / JavaScript
+# ──────────────
+
+# Node modules
+node_modules/
+**/node_modules/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Optional npm cache
+.npm
+.npmrc
+.npm-global
+.yarn/*
+.pnpm-store/
+
+# Build output
+dist/
+build/
+out/
+lib/
+tmp/
+temp/
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# dotenv files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# lockfiles (if you don't want to commit)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# IDE and editors
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Misc
+coverage/
+.nyc_output/
+*.tsbuildinfo

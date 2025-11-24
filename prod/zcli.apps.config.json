@@ -5,18 +5,19 @@
         "Legacy Ticket Merges Field ID": 31799816071837,
         "Display Legacy Data Field IDs": [
             "id",
-            "subject",
-            "description",
             "status",
             "priority",
-            "type",
             "created_at",
             "updated_at",
-            "via",
-            23151781358737,
-            23151879516561
+            23153070817553,
+            22946422264721,
+            19399131253905,
+            23143240966545,
+            22953620114065,
+            8800117621905
         ],
         "Display Legacy Merges Field IDs": [
+            "id",
             "ticket_id",
             "ticket_ids"
         ]

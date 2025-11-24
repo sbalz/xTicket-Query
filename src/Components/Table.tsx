@@ -2,10 +2,12 @@ import React from 'react';
 import styled from 'styled-components';
 import {Table as GardenTable} from '@zendeskgarden/react-tables';
 import type {ITableRow} from '../declarations';
+import {LEGACY_FIELD_LABELS} from '../Utils/xTicketLabels';
 
-const StyledContainer = styled.div`
-    overflow: auto;
-    flex: 1 1 auto;
+const TableContainer = styled.div`
+    width: 100%;
+    overflow-x: auto;
+    margin-bottom: 8px;
 `;
 
 const TitleCell = styled(GardenTable.Cell)`
@@ -17,28 +19,28 @@ const TitleCell = styled(GardenTable.Cell)`
 const ValueCell = styled(GardenTable.Cell)<{clickable?: boolean}>`
     width: 60%;
     font-size: 13px;
-    cursor: ${(p) => (p.clickable ? 'pointer' : 'default')};
-    color: ${(p) => (p.clickable ? '#1f73b7' : 'inherit')};
+    cursor: ${({clickable}) => (clickable ? 'pointer' : 'default')};
+    color: ${({clickable}) => (clickable ? '#1f73b7' : 'inherit')};
     &:hover {
-        text-decoration: ${(p) => (p.clickable ? 'underline' : 'none')};
+        text-decoration: ${({clickable}) => (clickable ? 'underline' : 'none')};
     }
 `;
 
 interface TableProps {
     data: ITableRow[];
     merges?: Record<string, string>;
-    extIdSource?: string; // e.g. `/agent/tickets/{{external_id}}` or `/tickets/{{external_id}}`
+    extIdSource?: string;
 }
 
 const Table: React.FC<TableProps> = ({data, merges = {}, extIdSource}) => {
-    const getLink = (externalId?: string) => {
-        if (!extIdSource) return '#';
-        const newId = externalId ? merges?.[externalId] || externalId : '';
-        return extIdSource.replace('{{external_id}}', String(newId));
+    const getTicketLink = (externalId?: string) => {
+        if (!extIdSource || !externalId) return '#';
+        const resolvedId = merges[externalId] || externalId;
+        return extIdSource.replace('{{external_id}}', String(resolvedId));
     };
 
     return (
-        <StyledContainer>
+        <TableContainer>
             <GardenTable size='small'>
                 <GardenTable.Body>
                     {data.length === 0 ? (
@@ -48,25 +50,19 @@ const Table: React.FC<TableProps> = ({data, merges = {}, extIdSource}) => {
                         </GardenTable.Row>
                     ) : (
                         data.map((row) => {
-                            // detect legacy external id row (common key 'id' or 'ticket_id')
-                            const isExternalIdKey = [
-                                'id',
-                                'ticket_id',
-                                'external_id',
-                            ].includes(row.key);
-
+                            const isMergeId = row.key in merges;
                             const renderValue = () => {
-                                // prefer to render as link when extIdSource present and we have a numeric/string id
                                 if (
-                                    extIdSource &&
-                                    isExternalIdKey &&
-                                    row.value !== '' &&
-                                    row.value !== null &&
-                                    row.value !== undefined
-                                ) {
+                                    row.value === null ||
+                                    row.value === undefined
+                                )
+                                    return '-';
+                                if (isMergeId && extIdSource) {
                                     return (
                                         <a
-                                            href={getLink(String(row.value))}
+                                            href={getTicketLink(
+                                                String(row.value),
+                                            )}
                                             target='_blank'
                                             rel='noopener noreferrer'
                                         >
@@ -74,21 +70,15 @@ const Table: React.FC<TableProps> = ({data, merges = {}, extIdSource}) => {
                                         </a>
                                     );
                                 }
-                                // otherwise render raw value
-                                return typeof row.value === 'string' ||
-                                    typeof row.value === 'number'
-                                    ? row.value
-                                    : JSON.stringify(row.value);
+                                return typeof row.value === 'object'
+                                    ? JSON.stringify(row.value)
+                                    : row.value;
                             };
 
                             return (
                                 <GardenTable.Row key={row.key}>
                                     <TitleCell>{row.title}</TitleCell>
-                                    <ValueCell
-                                        clickable={
-                                            !!extIdSource && isExternalIdKey
-                                        }
-                                    >
+                                    <ValueCell clickable={isMergeId}>
                                         {renderValue()}
                                     </ValueCell>
                                 </GardenTable.Row>
@@ -97,7 +87,7 @@ const Table: React.FC<TableProps> = ({data, merges = {}, extIdSource}) => {
                     )}
                 </GardenTable.Body>
             </GardenTable>
-        </StyledContainer>
+        </TableContainer>
     );
 };
 
