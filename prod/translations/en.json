@@ -1,0 +1,8 @@
+{
+  "app": {
+    "name": "End-User Service 2",
+    "short_description": "Secure management of end users",
+    "long_description": "End-User Service 2 enables support teams to efficiently and securely manage end-user information directly within Zendesk. The app allows you to selectively show or hide user fields, verify and set primary email addresses, add or remove user tags, change a user's language, and unlock suspended users. All changes are applied in real time, ensuring that information remains up to date — without granting full access to Zendesk profiles or compromising sensitive data areas.",
+    "installation_instructions": "1. Install End-User Service 2 in your Zendesk account.\n2. Open the app via the user sidebar.\n3. Manage user fields: The app automatically loads all relevant fields; review and adjust the visible fields as needed.\n4. Manage email addresses: Select an email and click 'Set as Primary', 'Verify', or 'Remove'.\n5. Update user tags: Select tags from the list and click 'Add' or 'Remove'.\n6. Change language: Select the desired language and click 'Change Language'.\n7. Unlock suspended users: Click 'Unlock User' to restore access.\n8. All changes are applied directly in Zendesk and updated instantly."
+  }
+}

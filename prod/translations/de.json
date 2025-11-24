@@ -1,0 +1,8 @@
+{
+  "app": {
+    "name": "End-User Service 2",
+    "short_description": "Sichere Verwaltung von Endbenutzern",
+    "long_description": "End-User Service 2 ermöglicht Support-Teams, Endbenutzerinformationen direkt in Zendesk effizient und sicher zu verwalten. Die App erlaubt es, Benutzerfelder gezielt ein- oder auszublenden, E-Mail-Adressen zu prüfen und als primär festzulegen, Benutzer-Tags hinzuzufügen oder zu entfernen, die Sprache eines Benutzers zu ändern und gesperrte Benutzer wieder zu entsperren. Alle Änderungen werden in Echtzeit übernommen, sodass Informationen stets aktuell bleiben – ohne den vollständigen Zugriff auf Zendesk-Profile freizugeben oder sensible Datenbereiche zu gefährden.",
+    "installation_instructions": "1. Installieren Sie End-User Service 2 in Ihrem Zendesk-Konto.\n2. Öffnen Sie die App über die Benutzer-Sidebar.\n3. Benutzerfelder verwalten: Die App lädt alle relevanten Felder automatisch; überprüfen und passen Sie sichtbare Felder nach Bedarf an.\n4. E-Mail-Adressen verwalten: Wählen Sie eine E-Mail und klicken Sie auf 'Primär setzen', 'Verifizieren' oder 'Entfernen'.\n5. Benutzer-Tags aktualisieren: Wählen Sie Tags aus der Liste und klicken Sie auf 'Hinzufügen' oder 'Entfernen'.\n6. Sprache ändern: Wählen Sie die gewünschte Sprache und klicken Sie auf 'Sprache ändern'.\n7. Gesperrte Benutzer entsperren: Klicken Sie auf 'Benutzer entsperren', um den Zugriff wiederherzustellen.\n8. Alle Änderungen werden direkt in Zendesk übernommen und sofort aktualisiert."
+  }
+}

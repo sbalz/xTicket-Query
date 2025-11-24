@@ -1,0 +1,46 @@
+{
+  "name": "Legacy Ticket Finder",
+  "author": {
+    "name": "Steven Balz",
+    "email": "apps@sbalz.de",
+    "url": "https://github.com/sbalz"
+  },
+  "defaultLocale": "de",
+  "private": true,
+  "location": {
+    "support": {
+      "ticket_sidebar": {
+        "url": "assets/index.html",
+        "flexible": false
+      }
+    }
+  },
+  "version": "2.0.0",
+  "frameworkVersion": "2.0",
+  "parameters": [
+    {
+      "name": "Legacy Ticket Data Field ID",
+      "type": "number",
+      "required": true,
+      "hint": "Custom field ID where legacy ticket JSON payload is stored"
+    },
+    {
+      "name": "Legacy Ticket Merges Field ID",
+      "type": "number",
+      "required": true,
+      "hint": "Custom field ID where legacy ticket merge data is stored"
+    },
+    {
+      "name": "Display Legacy Data Field IDs",
+      "type": "text",
+      "required": true,
+      "hint": "Comma-separated list of fields to display from legacy ticket JSON"
+    },
+    {
+      "name": "Display Legacy Merges Field IDs",
+      "type": "text",
+      "required": true,
+      "hint": "Comma-separated list of fields to display from legacy merges JSON"
+    }
+  ]
+}

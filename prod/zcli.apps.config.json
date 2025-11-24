@@ -1,0 +1,24 @@
+{
+    "app_id": 0,
+    "parameters": {
+        "Legacy Ticket Data Field ID": 29956151210269,
+        "Legacy Ticket Merges Field ID": 31799816071837,
+        "Display Legacy Data Field IDs": [
+            "id",
+            "subject",
+            "description",
+            "status",
+            "priority",
+            "type",
+            "created_at",
+            "updated_at",
+            "via",
+            23151781358737,
+            23151879516561
+        ],
+        "Display Legacy Merges Field IDs": [
+            "ticket_id",
+            "ticket_ids"
+        ]
+    }
+}
