@@ -1,18 +1,29 @@
 import client from './ZAFClient';
 
-export const resizeApp = (container?: HTMLElement) => {
-    if (!container) {
-        const root = document.getElementById('root');
-        if (!root) return;
-        container = root;
-    }
+let resizeTimeout: number | null = null;
 
-    const totalHeight = container.scrollHeight + 16; // buffer
-    client?.invoke('resize', {height: totalHeight});
+export const resizeApp = (container?: HTMLElement) => {
+    const el = container || document.getElementById('root');
+    if (!el) return;
+
+    const totalHeight = el.scrollHeight + 16;
+
+    if (resizeTimeout) clearTimeout(resizeTimeout);
+    resizeTimeout = window.setTimeout(
+        () => client?.invoke('resize', {height: totalHeight}),
+        50,
+    );
 };
 
-let observer: ResizeObserver | null = null;
 export const registerComponent = (container: HTMLElement) => {
-    if (!observer) observer = new ResizeObserver(() => resizeApp(container));
-    observer.observe(container);
+    if (!container) return;
+
+    const observer = new MutationObserver(() => resizeApp(container));
+    observer.observe(container, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+    });
+
+    resizeApp(container);
 };

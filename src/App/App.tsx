@@ -51,14 +51,13 @@ export default function App(): JSX.Element {
             const payload = mapTicketToPayload(ticketData, allFieldIds);
             setTicketPayload(payload);
 
-            const appSettings: AppSettings = {
+            setSettings({
                 legacyTicketDataFieldId: Number(legacyTicketDataId),
                 legacyTicketMergesFieldId: Number(legacyTicketMergesId),
                 displayLegacyDataFieldIds: displayDataIds,
                 displayLegacyMergesFieldIds: displayMergeIds,
                 title: appTitle,
-            };
-            setSettings(appSettings);
+            });
 
             logMessage('App Initialized');
         } catch (error: any) {

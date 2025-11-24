@@ -2,29 +2,29 @@ import type {ITicket, ICustomField, ITableRow} from '../declarations';
 import {LEGACY_FIELD_LABELS} from '../Utils/xTicketLabels';
 
 export const mapTicketToPayload = (
-    ticket: any,
+    ticket: Partial<ITicket> & {custom_fields?: ICustomField[]},
     fieldIds: Array<number | string>,
 ): ITicket => ({
-    id: ticket.id,
+    id: ticket.id!,
     subject: ticket.subject ?? '',
     custom_fields: (ticket.custom_fields ?? [])
         .filter(
-            (cf: any) =>
+            (cf) =>
                 fieldIds.includes(cf.id) || fieldIds.includes(String(cf.id)),
         )
-        .map((cf: any) => ({
-            id: Number(cf.id),
-            value: cf.value,
-        })) as ICustomField[],
+        .map((cf) => ({id: Number(cf.id), value: cf.value})),
 });
 
 export const parseFieldValue = (value: unknown): Record<string, any> => {
     if (value == null) return {};
     if (typeof value === 'string') {
         try {
-            return JSON.parse(value) ?? {};
+            const parsed = JSON.parse(value);
+            return typeof parsed === 'object' && parsed !== null
+                ? parsed
+                : {value: parsed};
         } catch {
-            return {unknown: value};
+            return {value};
         }
     }
     if (Array.isArray(value)) return {array: value};
@@ -50,10 +50,23 @@ export const buildMergeMap = (
 export const buildTableRows = (
     obj: Record<string, any>,
     fieldIds: Array<string | number>,
-): ITableRow[] => {
-    return fieldIds.map((field) => ({
-        key: String(field),
-        title: LEGACY_FIELD_LABELS[field] ?? String(field),
-        value: obj?.[field] ?? obj?.[String(field)] ?? '-',
-    }));
-};
+): ITableRow[] =>
+    fieldIds.map((field) => {
+        const rawValue = obj?.[field] ?? obj?.[String(field)] ?? '-';
+        let value: string;
+        if (rawValue === null || rawValue === undefined) value = '-';
+        else if (typeof rawValue === 'object')
+            value = Array.isArray(rawValue)
+                ? rawValue
+                      .map((v) =>
+                          typeof v === 'object' ? JSON.stringify(v) : String(v),
+                      )
+                      .join(', ')
+                : JSON.stringify(rawValue);
+        else value = String(rawValue);
+        return {
+            key: String(field),
+            title: LEGACY_FIELD_LABELS[field] ?? String(field),
+            value,
+        };
+    });

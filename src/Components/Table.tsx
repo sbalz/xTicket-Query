@@ -2,7 +2,6 @@ import React from 'react';
 import styled from 'styled-components';
 import {Table as GardenTable} from '@zendeskgarden/react-tables';
 import type {ITableRow} from '../declarations';
-import {LEGACY_FIELD_LABELS} from '../Utils/xTicketLabels';
 
 const TableContainer = styled.div`
     width: 100%;
@@ -35,8 +34,10 @@ interface TableProps {
 const Table: React.FC<TableProps> = ({data, merges = {}, extIdSource}) => {
     const getTicketLink = (externalId?: string) => {
         if (!extIdSource || !externalId) return '#';
-        const resolvedId = merges[externalId] || externalId;
-        return extIdSource.replace('{{external_id}}', String(resolvedId));
+        return extIdSource.replace(
+            '{{external_id}}',
+            merges[externalId] || externalId,
+        );
     };
 
     return (
@@ -49,16 +50,11 @@ const Table: React.FC<TableProps> = ({data, merges = {}, extIdSource}) => {
                             <ValueCell>-</ValueCell>
                         </GardenTable.Row>
                     ) : (
-                        data.map((row) => {
-                            const isMergeId = row.key in merges;
-                            const renderValue = () => {
-                                if (
-                                    row.value === null ||
-                                    row.value === undefined
-                                )
-                                    return '-';
-                                if (isMergeId && extIdSource) {
-                                    return (
+                        data.map((row) => (
+                            <GardenTable.Row key={row.key}>
+                                <TitleCell>{row.title}</TitleCell>
+                                <ValueCell clickable={row.key in merges}>
+                                    {row.key in merges && extIdSource ? (
                                         <a
                                             href={getTicketLink(
                                                 String(row.value),
@@ -66,24 +62,16 @@ const Table: React.FC<TableProps> = ({data, merges = {}, extIdSource}) => {
                                             target='_blank'
                                             rel='noopener noreferrer'
                                         >
-                                            {String(row.value)}
+                                            {row.value}
                                         </a>
-                                    );
-                                }
-                                return typeof row.value === 'object'
-                                    ? JSON.stringify(row.value)
-                                    : row.value;
-                            };
-
-                            return (
-                                <GardenTable.Row key={row.key}>
-                                    <TitleCell>{row.title}</TitleCell>
-                                    <ValueCell clickable={isMergeId}>
-                                        {renderValue()}
-                                    </ValueCell>
-                                </GardenTable.Row>
-                            );
-                        })
+                                    ) : typeof row.value === 'object' ? (
+                                        JSON.stringify(row.value)
+                                    ) : (
+                                        row.value
+                                    )}
+                                </ValueCell>
+                            </GardenTable.Row>
+                        ))
                     )}
                 </GardenTable.Body>
             </GardenTable>

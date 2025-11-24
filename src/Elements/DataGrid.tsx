@@ -29,42 +29,27 @@ export default function DataGrid({settings, ticket}: DataGridProps) {
             (cf) => cf.id === settings.legacyTicketMergesFieldId,
         );
 
-        const dataObj = parseFieldValue(dataField?.value);
+        const dataObj = parseFieldValue(dataField?.value ?? {});
         const mergesObj = parseFieldValue(mergesField?.value ?? {});
 
-        const builtDataRows = buildTableRows(
-            dataObj,
-            settings.displayLegacyDataFieldIds,
+        setDataRows(
+            buildTableRows(dataObj, settings.displayLegacyDataFieldIds),
         );
-        const builtMergeRows = buildTableRows(
-            mergesObj,
-            settings.displayLegacyMergesFieldIds,
+        setMergeRows(
+            buildTableRows(mergesObj, settings.displayLegacyMergesFieldIds),
         );
-        const map = buildMergeMap(ticket.id, dataObj, mergesObj);
+        setMergesMap(buildMergeMap(ticket.id, dataObj, mergesObj));
 
-        setDataRows(builtDataRows);
-        setMergeRows(builtMergeRows);
-        setMergesMap(map);
-
-        // Resize after content is rendered
-        requestAnimationFrame(() => {
-            if (containerRef.current) {
-                resizeApp(containerRef.current);
-                registerComponent(containerRef.current);
-            }
-        });
+        if (containerRef.current) {
+            resizeApp(containerRef.current);
+            registerComponent(containerRef.current);
+        }
     }, [settings, ticket]);
 
     return (
         <div
             ref={containerRef}
-            style={{
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                padding: 8,
-                overflow: 'auto',
-            }}
+            style={{height: '100%', padding: 8, overflow: 'auto'}}
         >
             <h4>Ticket Data</h4>
             <Table data={dataRows} />

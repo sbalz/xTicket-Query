@@ -37,21 +37,10 @@ export interface AppSettings {
     readonly title: string;
 }
 
-/* ----------------- User ----------------- */
-export interface IUser {
-    readonly id: number;
-    readonly name: string;
-    readonly email?: string;
-    readonly role: 'admin' | 'end-user' | 'agent';
-    readonly locale?: string;
-    readonly time_zone?: string;
-}
-
 /* ----------------- Ticket ----------------- */
 export interface ITicket {
     readonly id: string | number;
     readonly external_id?: string | null;
-    readonly url?: string;
     readonly subject: string;
     readonly description?: string;
     readonly status?: string;
@@ -60,7 +49,6 @@ export interface ITicket {
     readonly created_at?: string;
     readonly updated_at?: string;
     readonly problem_id?: number | null;
-    readonly has_incidents?: boolean;
     readonly is_public?: boolean;
     readonly tags?: string[];
     readonly via?: ITicketVia;
@@ -99,24 +87,16 @@ export interface ITableRow {
 export interface ITableProps {
     readonly data: ITableRow[];
     readonly minWidth?: number;
-    readonly extIdSource?: string;
 }
 
 /* ----------------- DataGrid Props ----------------- */
 export interface IDataGridProps {
-    readonly user: IUser;
     readonly settings: AppSettings;
     readonly account: string;
-    readonly currentUser?: IUser;
 }
 
 /* ----------------- DataTable Props ----------------- */
 export interface IDataTableProps {
-    readonly user: IUser;
     readonly settings: AppSettings;
     readonly account: string;
-    readonly userTags: string[];
-    readonly setUserTags: React.Dispatch<React.SetStateAction<string[]>>;
-    readonly extIdSource?: string;
-    readonly onDataLoaded?: () => void;
 }
