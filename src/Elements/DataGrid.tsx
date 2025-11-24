@@ -4,9 +4,9 @@ import {resizeApp, registerComponent} from '../Utils/ResizeApp';
 import {
     parseFieldValue,
     buildMergeMap,
-    buildTableRows,
+    buildGroupedRows,
 } from '../Elements/DataRows';
-import type {AppSettings, ITicket, ITableRow} from '../declarations';
+import type {AppSettings, ITicket, IGroupedRows} from '../declarations';
 
 interface DataGridProps {
     settings: AppSettings;
@@ -14,8 +14,7 @@ interface DataGridProps {
 }
 
 export default function DataGrid({settings, ticket}: DataGridProps) {
-    const [dataRows, setDataRows] = useState<ITableRow[]>([]);
-    const [mergeRows, setMergeRows] = useState<ITableRow[]>([]);
+    const [groupedRows, setGroupedRows] = useState<IGroupedRows[]>([]);
     const [mergesMap, setMergesMap] = useState<Record<string, string>>({});
     const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -32,12 +31,15 @@ export default function DataGrid({settings, ticket}: DataGridProps) {
         const dataObj = parseFieldValue(dataField?.value ?? {});
         const mergesObj = parseFieldValue(mergesField?.value ?? {});
 
-        setDataRows(
-            buildTableRows(dataObj, settings.displayLegacyDataFieldIds),
+        setGroupedRows(
+            buildGroupedRows(
+                dataObj,
+                settings.displayLegacyDataFieldIds,
+                mergesObj,
+                settings.displayLegacyMergesFieldIds,
+            ),
         );
-        setMergeRows(
-            buildTableRows(mergesObj, settings.displayLegacyMergesFieldIds),
-        );
+
         setMergesMap(buildMergeMap(ticket.id, dataObj, mergesObj));
 
         if (containerRef.current) {
@@ -51,14 +53,8 @@ export default function DataGrid({settings, ticket}: DataGridProps) {
             ref={containerRef}
             style={{height: '100%', padding: 8, overflow: 'auto'}}
         >
-            <h4>Ticket Data</h4>
-            <Table data={dataRows} />
-
-            <hr style={{margin: '12px 0'}} />
-
-            <h4>Merge Data</h4>
             <Table
-                data={mergeRows}
+                groupedData={groupedRows}
                 merges={mergesMap}
                 extIdSource={`/agent/tickets/{{external_id}}`}
             />

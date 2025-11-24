@@ -5,8 +5,6 @@
         "Legacy Ticket Merges Field ID": 31799816071837,
         "Display Legacy Data Field IDs": [
             "id",
-            "status",
-            "priority",
             "created_at",
             "updated_at",
             23153070817553,

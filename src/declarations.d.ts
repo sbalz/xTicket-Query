@@ -71,6 +71,12 @@ export interface ICustomField {
     readonly value: string | number | boolean | null | object;
 }
 
+/* ----------------- Grouped Rows ----------------- */
+export interface IGroupedRows {
+    group: string;
+    rows: ITableRow[];
+}
+
 /* ----------------- Merge Mapping ----------------- */
 export interface IMerge {
     readonly old_ticket_id: string | number;
