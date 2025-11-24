@@ -6,9 +6,6 @@ import type {
 } from '../declarations';
 import {LEGACY_FIELD_LABELS} from '../Utils/xTicketLabels';
 
-/**
- * Maps Zendesk ticket to simplified payload containing only needed custom fields.
- */
 export const mapTicketToPayload = (
     ticket: Partial<ITicket> & {custom_fields?: ICustomField[]},
     fieldIds: Array<number | string>,
@@ -23,48 +20,44 @@ export const mapTicketToPayload = (
         .map((cf) => ({id: Number(cf.id), value: cf.value})),
 });
 
-/**
- * Parses any field value into a consistent object.
- */
 export const parseFieldValue = (value: unknown): Record<string, any> => {
     if (value == null) return {};
+
     if (typeof value === 'string') {
         try {
             const parsed = JSON.parse(value);
-            return typeof parsed === 'object' && parsed !== null
+            return parsed && typeof parsed === 'object'
                 ? parsed
                 : {value: parsed};
         } catch {
             return {value};
         }
     }
+
     if (Array.isArray(value)) return {array: value};
+
     return typeof value === 'object' ? (value as Record<string, any>) : {value};
 };
 
-/**
- * Build merge map for clickable links
- */
 export const buildMergeMap = (
     ticketId: string | number,
     dataObj: Record<string, any>,
     mergesObj: Record<string, any>,
 ): Record<string, string> => {
     const map: Record<string, string> = {};
+
     if (mergesObj?.ticket_id)
         map[String(mergesObj.ticket_id)] = String(ticketId);
     if (Array.isArray(mergesObj?.ticket_ids)) {
-        mergesObj.ticket_ids.forEach(
-            (id) => (map[String(id)] = String(ticketId)),
-        );
+        mergesObj.ticket_ids.forEach((id) => {
+            map[String(id)] = String(ticketId);
+        });
     }
     if (dataObj?.id) map[String(dataObj.id)] = String(ticketId);
+
     return map;
 };
 
-/**
- * Build table rows from object fields
- */
 export const buildTableRows = (
     obj: Record<string, any>,
     fieldIds: Array<string | number>,
@@ -72,16 +65,22 @@ export const buildTableRows = (
     fieldIds.map((field) => {
         const rawValue = obj?.[field] ?? obj?.[String(field)] ?? '-';
         let value: string;
-        if (rawValue === null || rawValue === undefined) value = '-';
-        else if (typeof rawValue === 'object')
-            value = Array.isArray(rawValue)
-                ? rawValue
-                      .map((v) =>
-                          typeof v === 'object' ? JSON.stringify(v) : String(v),
-                      )
-                      .join(', ')
-                : JSON.stringify(rawValue);
-        else value = String(rawValue);
+
+        if (rawValue == null) {
+            value = '-';
+        } else if (typeof rawValue === 'object') {
+            if (Array.isArray(rawValue)) {
+                value = rawValue
+                    .map((v) =>
+                        typeof v === 'object' ? JSON.stringify(v) : String(v),
+                    )
+                    .join(', ');
+            } else {
+                value = JSON.stringify(rawValue);
+            }
+        } else {
+            value = String(rawValue);
+        }
 
         return {
             key: String(field),
@@ -90,9 +89,6 @@ export const buildTableRows = (
         };
     });
 
-/**
- * Build grouped rows for Table component
- */
 export const buildGroupedRows = (
     dataObj: Record<string, any>,
     displayIds: Array<string | number>,

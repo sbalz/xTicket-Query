@@ -19,33 +19,34 @@ export default function DataGrid({settings, ticket}: DataGridProps) {
     const containerRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
-        const customFields = ticket.custom_fields ?? [];
+        const processTicketData = () => {
+            const dataField = ticket.custom_fields?.find(
+                (cf) => cf.id === settings.legacyTicketDataFieldId,
+            );
+            const mergesField = ticket.custom_fields?.find(
+                (cf) => cf.id === settings.legacyTicketMergesFieldId,
+            );
 
-        const dataField = customFields.find(
-            (cf) => cf.id === settings.legacyTicketDataFieldId,
-        );
-        const mergesField = customFields.find(
-            (cf) => cf.id === settings.legacyTicketMergesFieldId,
-        );
+            const dataObj = parseFieldValue(dataField?.value);
+            const mergesObj = parseFieldValue(mergesField?.value);
 
-        const dataObj = parseFieldValue(dataField?.value ?? {});
-        const mergesObj = parseFieldValue(mergesField?.value ?? {});
+            setGroupedRows(
+                buildGroupedRows(
+                    dataObj,
+                    settings.displayLegacyDataFieldIds,
+                    mergesObj,
+                    settings.displayLegacyMergesFieldIds,
+                ),
+            );
+            setMergesMap(buildMergeMap(ticket.id, dataObj, mergesObj));
 
-        setGroupedRows(
-            buildGroupedRows(
-                dataObj,
-                settings.displayLegacyDataFieldIds,
-                mergesObj,
-                settings.displayLegacyMergesFieldIds,
-            ),
-        );
+            if (containerRef.current) {
+                resizeApp(containerRef.current);
+                registerComponent(containerRef.current);
+            }
+        };
 
-        setMergesMap(buildMergeMap(ticket.id, dataObj, mergesObj));
-
-        if (containerRef.current) {
-            resizeApp(containerRef.current);
-            registerComponent(containerRef.current);
-        }
+        processTicketData();
     }, [settings, ticket]);
 
     return (

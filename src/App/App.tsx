@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useCallback} from 'react';
+import React, {useEffect, useState} from 'react';
 import DataGrid from '../Elements/DataGrid';
 import client from '../Utils/ZAFClient';
 import {logMessage, setAppTitle} from '../Utils/ConsoleLog';
@@ -9,68 +9,72 @@ export default function App(): JSX.Element {
     const [settings, setSettings] = useState<AppSettings | null>(null);
     const [ticketPayload, setTicketPayload] = useState<ITicket | null>(null);
 
-    const initializeApp = useCallback(async () => {
-        if (!client) return console.error('ZAF client not available');
-
-        try {
-            const meta = await client.metadata();
-            const metaSettings = meta?.settings ?? {};
-            const appTitle = meta?.title ?? 'xTicket Query';
-            setAppTitle(appTitle);
-
-            const legacyTicketDataId =
-                metaSettings['Legacy Ticket Data Field ID'];
-            const legacyTicketMergesId =
-                metaSettings['Legacy Ticket Merges Field ID'];
-            const displayDataIds =
-                metaSettings['Display Legacy Data Field IDs'] ?? [];
-            const displayMergeIds =
-                metaSettings['Display Legacy Merges Field IDs'] ?? [];
-
-            const allFieldIds = [
-                legacyTicketDataId,
-                legacyTicketMergesId,
-                ...displayDataIds,
-                ...displayMergeIds,
-            ].filter(Boolean);
-
-            const context = await client.context();
-            const ticketId = context?.ticketId;
-            if (!ticketId)
-                return logMessage('No ticket in context. Nothing to display.');
-
-            const response = await client.request({
-                url: `/api/v2/tickets/${ticketId}.json`,
-                type: 'GET',
-                dataType: 'json',
-            });
-
-            const ticketData = response?.ticket;
-            if (!ticketData) throw new Error('Ticket API returned no ticket');
-
-            const payload = mapTicketToPayload(ticketData, allFieldIds);
-            setTicketPayload(payload);
-
-            setSettings({
-                legacyTicketDataFieldId: Number(legacyTicketDataId),
-                legacyTicketMergesFieldId: Number(legacyTicketMergesId),
-                displayLegacyDataFieldIds: displayDataIds,
-                displayLegacyMergesFieldIds: displayMergeIds,
-                title: appTitle,
-            });
-
-            logMessage('App Initialized');
-        } catch (error: any) {
-            console.error(
-                '❌ Error initializing app:',
-                error?.message ?? error,
-            );
-        }
-    }, []);
-
     useEffect(() => {
+        const initializeApp = async () => {
+            if (!client) return console.error('ZAF client not available');
+
+            try {
+                const {
+                    settings: metaSettings = {},
+                    title: appTitle = 'xTicket Query',
+                } = (await client.metadata()) ?? {};
+                setAppTitle(appTitle);
+
+                const legacyTicketDataFieldId =
+                    metaSettings['Legacy Ticket Data Field ID'];
+                const legacyTicketMergesFieldId =
+                    metaSettings['Legacy Ticket Merges Field ID'];
+                const displayDataFieldIds =
+                    metaSettings['Display Legacy Data Field IDs'] ?? [];
+                const displayMergeFieldIds =
+                    metaSettings['Display Legacy Merges Field IDs'] ?? [];
+
+                const allFieldIds = [
+                    legacyTicketDataFieldId,
+                    legacyTicketMergesFieldId,
+                    ...displayDataFieldIds,
+                    ...displayMergeFieldIds,
+                ].filter(Boolean);
+
+                const ticketId = (await client.context())?.ticketId;
+                if (!ticketId)
+                    return logMessage(
+                        'No ticket in context. Nothing to display.',
+                    );
+
+                const ticketData = (
+                    await client.request({
+                        url: `/api/v2/tickets/${ticketId}.json`,
+                        type: 'GET',
+                        dataType: 'json',
+                    })
+                )?.ticket;
+                if (!ticketData)
+                    throw new Error('Ticket API returned no ticket');
+
+                setTicketPayload(mapTicketToPayload(ticketData, allFieldIds));
+
+                setSettings({
+                    legacyTicketDataFieldId: Number(legacyTicketDataFieldId),
+                    legacyTicketMergesFieldId: Number(
+                        legacyTicketMergesFieldId,
+                    ),
+                    displayLegacyDataFieldIds: displayDataFieldIds,
+                    displayLegacyMergesFieldIds: displayMergeFieldIds,
+                    title: appTitle,
+                });
+
+                logMessage('App Initialized');
+            } catch (error: any) {
+                console.error(
+                    '❌ Error initializing app:',
+                    error?.message ?? error,
+                );
+            }
+        };
+
         initializeApp();
-    }, [initializeApp]);
+    }, []);
 
     if (!settings || !ticketPayload) {
         return (

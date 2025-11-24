@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useCallback} from 'react';
 import styled from 'styled-components';
 import {Table as GardenTable} from '@zendeskgarden/react-tables';
 import type {IGroupedRows} from '../declarations';
@@ -36,60 +36,67 @@ const Table: React.FC<TableProps> = ({
     merges = {},
     extIdSource,
 }) => {
-    const getTicketLink = (externalId?: string) => {
-        if (!extIdSource || !externalId) return '#';
-        return extIdSource.replace(
-            '{{external_id}}',
-            merges[externalId] || externalId,
+    const getTicketLink = useCallback(
+        (externalId?: string) =>
+            extIdSource && externalId
+                ? extIdSource.replace(
+                      '{{external_id}}',
+                      merges[externalId] || externalId,
+                  )
+                : '#',
+        [extIdSource, merges],
+    );
+
+    if (!groupedData.length) {
+        return (
+            <TableContainer>
+                <GardenTable size='small'>
+                    <GardenTable.Body>
+                        <GardenTable.Row>
+                            <TitleCell>No data</TitleCell>
+                            <ValueCell>-</ValueCell>
+                        </GardenTable.Row>
+                    </GardenTable.Body>
+                </GardenTable>
+            </TableContainer>
         );
-    };
+    }
 
     return (
         <TableContainer>
             <GardenTable size='small'>
                 <GardenTable.Body>
-                    {groupedData.length === 0 ? (
-                        <GardenTable.Row>
-                            <TitleCell>No data</TitleCell>
-                            <ValueCell>-</ValueCell>
-                        </GardenTable.Row>
-                    ) : (
-                        groupedData.map((group) => (
-                            <React.Fragment key={group.group}>
-                                <GardenTable.GroupRow>
-                                    <GardenTable.Cell colSpan={2}>
-                                        <b>{group.group}</b>
-                                    </GardenTable.Cell>
-                                </GardenTable.GroupRow>
-                                {group.rows.map((row) => (
-                                    <GardenTable.Row key={row.key}>
-                                        <TitleCell>{row.title}</TitleCell>
-                                        <ValueCell
-                                            clickable={row.key in merges}
-                                        >
-                                            {row.key in merges &&
-                                            extIdSource ? (
-                                                <a
-                                                    href={getTicketLink(
-                                                        String(row.value),
-                                                    )}
-                                                    target='_blank'
-                                                    rel='noopener noreferrer'
-                                                >
-                                                    {row.value}
-                                                </a>
-                                            ) : typeof row.value ===
-                                              'object' ? (
-                                                JSON.stringify(row.value)
-                                            ) : (
-                                                row.value
-                                            )}
-                                        </ValueCell>
-                                    </GardenTable.Row>
-                                ))}
-                            </React.Fragment>
-                        ))
-                    )}
+                    {groupedData.map((group) => (
+                        <React.Fragment key={group.group}>
+                            <GardenTable.GroupRow>
+                                <GardenTable.Cell colSpan={2}>
+                                    <b>{group.group}</b>
+                                </GardenTable.Cell>
+                            </GardenTable.GroupRow>
+                            {group.rows.map((row) => (
+                                <GardenTable.Row key={row.key}>
+                                    <TitleCell>{row.title}</TitleCell>
+                                    <ValueCell clickable={row.key in merges}>
+                                        {row.key in merges && extIdSource ? (
+                                            <a
+                                                href={getTicketLink(
+                                                    String(row.value),
+                                                )}
+                                                target='_blank'
+                                                rel='noopener noreferrer'
+                                            >
+                                                {row.value}
+                                            </a>
+                                        ) : typeof row.value === 'object' ? (
+                                            JSON.stringify(row.value)
+                                        ) : (
+                                            row.value
+                                        )}
+                                    </ValueCell>
+                                </GardenTable.Row>
+                            ))}
+                        </React.Fragment>
+                    ))}
                 </GardenTable.Body>
             </GardenTable>
         </TableContainer>
