@@ -24,8 +24,6 @@ const ValueCell = styled(GardenTable.Cell)<{clickable?: boolean}>`
     font-size: 13px;
     cursor: ${({clickable}) => (clickable ? 'pointer' : 'default')};
     color: ${({clickable}) => (clickable ? '#1f73b7' : 'inherit')};
-
-    /* Truncate overflow text with ellipsis */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -35,20 +33,80 @@ const ValueCell = styled(GardenTable.Cell)<{clickable?: boolean}>`
     }
 `;
 
+const MergeLinksContainer = styled.span`
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+
+    a {
+        color: #1f73b7;
+        text-decoration: none;
+        word-break: break-all;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+`;
+
 const Table: React.FC<ITableProps> = ({
     groupedData,
     merges = {},
+    externalIdMap = {},
     extIdSource,
 }) => {
     const getTicketLink = useCallback(
-        (externalId?: string) =>
-            extIdSource && externalId
-                ? extIdSource.replace(
-                      '{{external_id}}',
-                      merges[externalId] || externalId,
-                  )
+        (ticketId?: string | number) =>
+            extIdSource && ticketId
+                ? extIdSource.replace('{{ticket_id}}', String(ticketId))
                 : '#',
-        [extIdSource, merges],
+        [extIdSource],
+    );
+
+    /**
+     * Render merged ticket links
+     * Parse comma-separated ticket IDs and resolve them to current IDs
+     */
+    const renderMergeLinks = useCallback(
+        (value: any): JSX.Element => {
+            if (!value) return <>-</>;
+
+            const ticketIds = String(value)
+                .split(',')
+                .map((id) => id.trim())
+                .filter(Boolean);
+
+            if (ticketIds.length === 0) return <>-</>;
+
+            return (
+                <MergeLinksContainer>
+                    {ticketIds.map((extId, idx) => {
+                        const currentId =
+                            externalIdMap[extId] ||
+                            externalIdMap[String(extId)];
+                        const displayId = currentId || extId;
+                        const href = getTicketLink(displayId);
+
+                        return (
+                            <a
+                                key={`${extId}-${idx}`}
+                                href={href}
+                                target='_blank'
+                                rel='noopener noreferrer'
+                                title={`Ticket #${displayId}${
+                                    currentId
+                                        ? ' (resolved from #' + extId + ')'
+                                        : ''
+                                }`}
+                            >
+                                #{displayId}
+                            </a>
+                        );
+                    })}
+                </MergeLinksContainer>
+            );
+        },
+        [externalIdMap, getTicketLink],
     );
 
     if (!groupedData.length) {
@@ -77,35 +135,47 @@ const Table: React.FC<ITableProps> = ({
                                     {group.group}
                                 </GroupRowCell>
                             </GardenTable.GroupRow>
-                            {group.rows.map((row) => (
-                                <GardenTable.Row key={row.key}>
-                                    <TitleCell>{row.title}</TitleCell>
-                                    <ValueCell
-                                        clickable={row.key in merges}
-                                        title={String(row.value)}
-                                    >
-                                        {row.key in merges && extIdSource ? (
-                                            <a
-                                                href={getTicketLink(
-                                                    String(row.value),
-                                                )}
-                                                target='_blank'
-                                                rel='noopener noreferrer'
-                                            >
-                                                {row.value ?? '-'}
-                                            </a>
-                                        ) : row.value === null ||
-                                          row.value === undefined ||
-                                          row.value === '' ? (
-                                            '-'
-                                        ) : typeof row.value === 'object' ? (
-                                            JSON.stringify(row.value)
-                                        ) : (
-                                            row.value
-                                        )}
-                                    </ValueCell>
-                                </GardenTable.Row>
-                            ))}
+                            {group.rows.map((row) => {
+                                const isMergeField = row.key in merges;
+                                const isMergeIdField = [
+                                    '0.via.source.from.ticket_id',
+                                    '0.via.source.from.ticket_ids',
+                                ].includes(row.key);
+
+                                return (
+                                    <GardenTable.Row key={row.key}>
+                                        <TitleCell>{row.title}</TitleCell>
+                                        <ValueCell
+                                            clickable={
+                                                isMergeField || isMergeIdField
+                                            }
+                                        >
+                                            {isMergeIdField ? (
+                                                renderMergeLinks(row.value)
+                                            ) : isMergeField && extIdSource ? (
+                                                <a
+                                                    href={getTicketLink(
+                                                        merges[row.key],
+                                                    )}
+                                                    target='_blank'
+                                                    rel='noopener noreferrer'
+                                                >
+                                                    {row.value ?? '-'}
+                                                </a>
+                                            ) : row.value === null ||
+                                              row.value === undefined ||
+                                              row.value === '' ? (
+                                                '-'
+                                            ) : typeof row.value ===
+                                              'object' ? (
+                                                JSON.stringify(row.value)
+                                            ) : (
+                                                row.value
+                                            )}
+                                        </ValueCell>
+                                    </GardenTable.Row>
+                                );
+                            })}
                         </React.Fragment>
                     ))}
                 </GardenTable.Body>

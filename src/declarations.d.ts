@@ -101,6 +101,7 @@ export interface ITableRow {
 export interface ITableProps {
     groupedData: IGroupedRows[];
     merges?: Record<string, string>;
+    externalIdMap?: Record<string, string>;
     extIdSource?: string;
 }
 

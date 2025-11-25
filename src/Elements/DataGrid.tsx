@@ -2,6 +2,10 @@ import React, {useEffect, useState, useRef} from 'react';
 import Table from '../Components/Table';
 import {resizeApp, registerComponent} from '../Utils/ResizeApp';
 import {buildMergeMap, buildGroupedRows} from './DataRows';
+import {
+    buildExternalIdToCurrentIdMap,
+    extractExternalIdsFromMergeData,
+} from '../Services/getMergedTicketLinks';
 import type {
     AppSettings,
     ITicket,
@@ -18,10 +22,37 @@ export default function DataGrid({
 }: IDataGridProps) {
     const [groupedRows, setGroupedRows] = useState<IGroupedRows[]>([]);
     const [mergesMap, setMergesMap] = useState<Record<string, string>>({});
+    const [externalIdMap, setExternalIdMap] = useState<Record<string, string>>(
+        {},
+    );
+    const [loading, setLoading] = useState(false);
     const containerRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
-        const processTicketData = () => {
+        const processTicketData = async () => {
+            setLoading(true);
+
+            // Build the merge map
+            const mergeMapping = buildMergeMap(
+                ticket.id,
+                legacyData,
+                mergeData,
+            );
+            setMergesMap(mergeMapping);
+
+            // Extract external IDs from merge data and build lookup
+            const externalIds = extractExternalIdsFromMergeData(mergeData);
+            if (externalIds.length > 0) {
+                console.log(
+                    '🔍 Searching for merged tickets with external IDs:',
+                    externalIds,
+                );
+                const extIdMap =
+                    await buildExternalIdToCurrentIdMap(externalIds);
+                console.log('✅ External ID to Current ID mapping:', extIdMap);
+                setExternalIdMap(extIdMap);
+            }
+
             setGroupedRows(
                 buildGroupedRows(
                     ticket,
@@ -34,12 +65,12 @@ export default function DataGrid({
                 ),
             );
 
-            setMergesMap(buildMergeMap(ticket.id, legacyData, mergeData));
-
             if (containerRef.current) {
                 resizeApp(containerRef.current);
                 registerComponent(containerRef.current);
             }
+
+            setLoading(false);
         };
 
         processTicketData();
@@ -47,10 +78,16 @@ export default function DataGrid({
 
     return (
         <div ref={containerRef}>
+            {loading && (
+                <div style={{padding: 12, fontSize: 13}}>
+                    Loading merge data…
+                </div>
+            )}
             <Table
                 groupedData={groupedRows}
                 merges={mergesMap}
-                extIdSource={`/agent/tickets/{{external_id}}`}
+                externalIdMap={externalIdMap}
+                extIdSource={`/agent/tickets/{{ticket_id}}`}
             />
         </div>
     );
