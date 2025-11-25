@@ -201,8 +201,6 @@ dist/
 build/
 out/
 lib/
-tmp/
-temp/
 
 # Runtime data
 pids/

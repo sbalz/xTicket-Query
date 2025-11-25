@@ -11,9 +11,14 @@ import type {AppSettings, ITicket, IGroupedRows} from '../declarations';
 interface DataGridProps {
     settings: AppSettings;
     ticket: ITicket;
+    ticketFieldLabels: Record<string, string>;
 }
 
-export default function DataGrid({settings, ticket}: DataGridProps) {
+export default function DataGrid({
+    settings,
+    ticket,
+    ticketFieldLabels,
+}: DataGridProps) {
     const [groupedRows, setGroupedRows] = useState<IGroupedRows[]>([]);
     const [mergesMap, setMergesMap] = useState<Record<string, string>>({});
     const containerRef = useRef<HTMLDivElement | null>(null);
@@ -32,10 +37,12 @@ export default function DataGrid({settings, ticket}: DataGridProps) {
 
             setGroupedRows(
                 buildGroupedRows(
-                    dataObj,
+                    ticket, // current ticket
                     settings.displayLegacyDataFieldIds,
-                    mergesObj,
+                    dataObj, // legacy ticket data
+                    mergesObj, // merge data
                     settings.displayLegacyMergesFieldIds,
+                    ticketFieldLabels,
                 ),
             );
             setMergesMap(buildMergeMap(ticket.id, dataObj, mergesObj));
@@ -47,7 +54,7 @@ export default function DataGrid({settings, ticket}: DataGridProps) {
         };
 
         processTicketData();
-    }, [settings, ticket]);
+    }, [settings, ticket, ticketFieldLabels]);
 
     return (
         <div

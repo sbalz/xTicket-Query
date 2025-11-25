@@ -31,6 +31,12 @@
       "hint": "Custom field ID where legacy ticket merge data is stored"
     },
     {
+      "name": "Display Current Ticket Data Field IDs",
+      "type": "text",
+      "required": true,
+      "hint": "Comma-separated list of fields to display from current ticket JSON"
+    },
+    {
       "name": "Display Legacy Data Field IDs",
       "type": "text",
       "required": true,

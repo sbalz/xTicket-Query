@@ -32,6 +32,7 @@ declare global {
 export interface AppSettings {
     readonly legacyTicketDataFieldId: number;
     readonly legacyTicketMergesFieldId: number;
+    readonly displayCurrentDataFieldIds?: Array<string | number>;
     readonly displayLegacyDataFieldIds: Array<string | number>;
     readonly displayLegacyMergesFieldIds: Array<string | number>;
     readonly title: string;

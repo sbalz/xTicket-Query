@@ -8,6 +8,9 @@ import type {AppSettings, ITicket} from '../declarations';
 export default function App(): JSX.Element {
     const [settings, setSettings] = useState<AppSettings | null>(null);
     const [ticketPayload, setTicketPayload] = useState<ITicket | null>(null);
+    const [ticketFieldLabels, setTicketFieldLabels] = useState<
+        Record<string, string>
+    >({});
 
     useEffect(() => {
         const initializeApp = async () => {
@@ -24,42 +27,45 @@ export default function App(): JSX.Element {
                     metaSettings['Legacy Ticket Data Field ID'];
                 const legacyTicketMergesFieldId =
                     metaSettings['Legacy Ticket Merges Field ID'];
-                const displayDataFieldIds =
+                const displayCurrentFieldIds =
+                    metaSettings['Display Current Ticket Data Field IDs'] ?? [];
+                const displayLegacyFieldIds =
                     metaSettings['Display Legacy Data Field IDs'] ?? [];
                 const displayMergeFieldIds =
                     metaSettings['Display Legacy Merges Field IDs'] ?? [];
 
                 const allFieldIds = [
+                    ...displayCurrentFieldIds,
+                    ...displayLegacyFieldIds,
+                    ...displayMergeFieldIds,
                     legacyTicketDataFieldId,
                     legacyTicketMergesFieldId,
-                    ...displayDataFieldIds,
-                    ...displayMergeFieldIds,
                 ].filter(Boolean);
 
-                const ticketId = (await client.context())?.ticketId;
-                if (!ticketId)
-                    return logMessage(
-                        'No ticket in context. Nothing to display.',
-                    );
+                // Fetch current ticket
+                const currentTicketData = await client.get('ticket');
+                const ticket = currentTicketData.ticket;
+                if (!ticket) return logMessage('No ticket in context.');
 
-                const ticketData = (
-                    await client.request({
-                        url: `/api/v2/tickets/${ticketId}.json`,
-                        type: 'GET',
-                        dataType: 'json',
-                    })
-                )?.ticket;
-                if (!ticketData)
-                    throw new Error('Ticket API returned no ticket');
+                setTicketPayload(mapTicketToPayload(ticket, allFieldIds));
 
-                setTicketPayload(mapTicketToPayload(ticketData, allFieldIds));
+                // Fetch Ticket Fields API for dynamic labels
+                const fieldDefs = await client.request(
+                    '/api/v2/ticket_fields.json',
+                );
+                const labels: Record<string, string> = {};
+                fieldDefs.ticket_fields.forEach((f: any) => {
+                    labels[`custom_field_${f.id}`] = f.title;
+                });
+                setTicketFieldLabels(labels);
 
+                // Set settings
                 setSettings({
                     legacyTicketDataFieldId: Number(legacyTicketDataFieldId),
                     legacyTicketMergesFieldId: Number(
                         legacyTicketMergesFieldId,
                     ),
-                    displayLegacyDataFieldIds: displayDataFieldIds,
+                    displayLegacyDataFieldIds: displayLegacyFieldIds,
                     displayLegacyMergesFieldIds: displayMergeFieldIds,
                     title: appTitle,
                 });
@@ -84,5 +90,11 @@ export default function App(): JSX.Element {
         );
     }
 
-    return <DataGrid settings={settings} ticket={ticketPayload} />;
+    return (
+        <DataGrid
+            settings={settings}
+            ticket={ticketPayload}
+            ticketFieldLabels={ticketFieldLabels}
+        />
+    );
 }

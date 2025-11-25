@@ -5,6 +5,7 @@ import type {
     IGroupedRows,
 } from '../declarations';
 import {LEGACY_FIELD_LABELS} from '../Utils/xTicketLabels';
+import {LEGACY_MERGE_FIELD_LABELS} from '../Utils/xMergeLabels';
 
 export const mapTicketToPayload = (
     ticket: Partial<ITicket> & {custom_fields?: ICustomField[]},
@@ -22,7 +23,6 @@ export const mapTicketToPayload = (
 
 export const parseFieldValue = (value: unknown): Record<string, any> => {
     if (value == null) return {};
-
     if (typeof value === 'string') {
         try {
             const parsed = JSON.parse(value);
@@ -33,9 +33,7 @@ export const parseFieldValue = (value: unknown): Record<string, any> => {
             return {value};
         }
     }
-
     if (Array.isArray(value)) return {array: value};
-
     return typeof value === 'object' ? (value as Record<string, any>) : {value};
 };
 
@@ -45,7 +43,6 @@ export const buildMergeMap = (
     mergesObj: Record<string, any>,
 ): Record<string, string> => {
     const map: Record<string, string> = {};
-
     if (mergesObj?.ticket_id)
         map[String(mergesObj.ticket_id)] = String(ticketId);
     if (Array.isArray(mergesObj?.ticket_ids)) {
@@ -54,53 +51,66 @@ export const buildMergeMap = (
         });
     }
     if (dataObj?.id) map[String(dataObj.id)] = String(ticketId);
-
     return map;
 };
 
 export const buildTableRows = (
     obj: Record<string, any>,
     fieldIds: Array<string | number>,
+    labels: Record<string, string>,
 ): ITableRow[] =>
     fieldIds.map((field) => {
         const rawValue = obj?.[field] ?? obj?.[String(field)] ?? '-';
         let value: string;
 
-        if (rawValue == null) {
-            value = '-';
-        } else if (typeof rawValue === 'object') {
-            if (Array.isArray(rawValue)) {
-                value = rawValue
-                    .map((v) =>
-                        typeof v === 'object' ? JSON.stringify(v) : String(v),
-                    )
-                    .join(', ');
-            } else {
-                value = JSON.stringify(rawValue);
-            }
-        } else {
-            value = String(rawValue);
-        }
+        if (rawValue == null) value = '-';
+        else if (typeof rawValue === 'object') {
+            value = Array.isArray(rawValue)
+                ? rawValue
+                      .map((v) =>
+                          typeof v === 'object' ? JSON.stringify(v) : String(v),
+                      )
+                      .join(', ')
+                : JSON.stringify(rawValue);
+        } else value = String(rawValue);
 
         return {
             key: String(field),
-            title: LEGACY_FIELD_LABELS[field] ?? String(field),
+            title: labels[field] ?? LEGACY_FIELD_LABELS[field] ?? String(field),
             value,
         };
     });
 
 export const buildGroupedRows = (
-    dataObj: Record<string, any>,
-    displayIds: Array<string | number>,
-    mergesObj: Record<string, any>,
-    mergeIds: Array<string | number>,
+    currentTicket: ITicket,
+    legacyFieldIds: Array<string | number>,
+    legacyDataObj: Record<string, any>,
+    mergeDataObj: Record<string, any>,
+    mergeFieldIds: Array<string | number>,
+    ticketFieldLabels: Record<string, string>,
 ): IGroupedRows[] => [
     {
-        group: 'Ticket Data',
-        rows: buildTableRows(dataObj, displayIds),
+        group: 'Current Ticket Data',
+        rows: buildTableRows(
+            currentTicket,
+            Object.keys(currentTicket) as Array<string | number>,
+            ticketFieldLabels,
+        ),
+    },
+    {
+        group: 'Legacy Ticket Data',
+        rows: buildTableRows(
+            legacyDataObj,
+            legacyFieldIds,
+            LEGACY_FIELD_LABELS,
+        ),
     },
     {
         group: 'Merge Data',
-        rows: buildTableRows(mergesObj, mergeIds),
+        rows: buildTableRows(
+            mergeDataObj,
+            mergeFieldIds,
+            LEGACY_MERGE_FIELD_LABELS,
+        ),
     },
 ];

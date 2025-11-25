@@ -3,6 +3,11 @@
     "parameters": {
         "Legacy Ticket Data Field ID": 29956151210269,
         "Legacy Ticket Merges Field ID": 31799816071837,
+        "Display Current Ticket Data Field IDs": [
+            "id",
+            "created_at",
+            "updated_at"
+        ],
         "Display Legacy Data Field IDs": [
             "id",
             "created_at",
@@ -14,10 +19,6 @@
             22953620114065,
             8800117621905
         ],
-        "Display Legacy Merges Field IDs": [
-            "id",
-            "ticket_id",
-            "ticket_ids"
-        ]
+        "Display Legacy Merges Field IDs": ["id", "ticket_id", "ticket_ids"]
     }
 }

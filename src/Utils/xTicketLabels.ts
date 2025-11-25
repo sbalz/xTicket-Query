@@ -41,7 +41,7 @@ export const LEGACY_FIELD_LABELS: Record<string | number, string> = {
     description: 'Beschreibung',
     generated_timestamp: 'Generierter Zeitstempel',
 
-    // Numeric field mappings (all translated to German)
+    // Numerische Felder (übersetzt)
     23153036131473: 'Alle Ticketdaten verfügbar',
     23152164781713: 'API-Zwischenablage',
     23151960117905: 'API-Interaktionskennung (Agent)',
