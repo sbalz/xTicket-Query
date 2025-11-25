@@ -55,8 +55,14 @@ export interface ITicket {
     readonly is_public?: boolean;
     readonly tags?: string[];
     readonly custom_fields?: ICustomField[];
+    readonly satisfaction_rating?: ISatisfactionRating | 'unoffered';
     readonly followup_ids?: number[];
     readonly support_type?: string;
+}
+
+export interface ISatisfactionRating {
+    readonly score: 'good' | 'bad' | 'unoffered';
+    readonly comment: string | null;
 }
 
 export interface ITicketVia {

@@ -86,11 +86,24 @@ export const buildCurrentTicketRows = (
     displayFieldIds: Array<string | number>,
     ticketFieldLabels: Record<string, string>,
 ): ITableRow[] => {
+    let satisfactionScore = 'unoffered';
+    let satisfactionComment = '';
+
+    if (
+        ticket.satisfaction_rating &&
+        typeof ticket.satisfaction_rating !== 'string'
+    ) {
+        satisfactionScore = ticket.satisfaction_rating.score;
+        satisfactionComment = ticket.satisfaction_rating.comment ?? '';
+    }
+
     const flatTicket: Record<string, any> = {
         id: ticket.id,
         created_at: ticket.created_at,
         updated_at: ticket.updated_at,
         subject: ticket.subject,
+        satisfaction_score: satisfactionScore,
+        satisfaction_comment: satisfactionComment,
     };
 
     // Add custom fields to flat structure
