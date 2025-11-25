@@ -4,9 +4,13 @@ import type {
     ITableRow,
     IGroupedRows,
 } from '../declarations';
-import {LEGACY_FIELD_LABELS} from '../Utils/xTicketLabels';
-import {LEGACY_MERGE_FIELD_LABELS} from '../Utils/xMergeLabels';
+import {LEGACY_FIELD_LABELS} from '../Mappings/xTicketLabels';
+import {LEGACY_MERGE_FIELD_LABELS} from '../Mappings/xMergeLabels';
+import {formatDate} from '../Utils/DateFormat';
 
+/**
+ * Map ticket into minimal payload structure
+ */
 export const mapTicketToPayload = (
     ticket: Partial<ITicket> & {custom_fields?: ICustomField[]},
     fieldIds: Array<number | string>,
@@ -23,6 +27,9 @@ export const mapTicketToPayload = (
     };
 };
 
+/**
+ * Parse any field value into object
+ */
 export const parseFieldValue = (value: unknown): Record<string, any> => {
     if (value == null) return {};
     if (typeof value === 'string') {
@@ -39,6 +46,9 @@ export const parseFieldValue = (value: unknown): Record<string, any> => {
     return typeof value === 'object' ? (value as Record<string, any>) : {value};
 };
 
+/**
+ * Build mapping of ticket/merge IDs for links
+ */
 export const buildMergeMap = (
     ticketId: string | number,
     dataObj: Record<string, any>,
@@ -55,6 +65,9 @@ export const buildMergeMap = (
     return map;
 };
 
+/**
+ * Build rows for a table group
+ */
 export const buildTableRows = (
     obj: Record<string, any>,
     fieldIds: Array<string | number>,
@@ -64,8 +77,14 @@ export const buildTableRows = (
         const rawValue = obj?.[field] ?? obj?.[String(field)] ?? '-';
         let value: string;
 
-        if (rawValue == null) value = '-';
-        else if (typeof rawValue === 'object') {
+        if (rawValue == null) {
+            value = '-';
+        } else if (
+            typeof rawValue === 'string' &&
+            rawValue.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/)
+        ) {
+            value = formatDate(rawValue); // format date
+        } else if (typeof rawValue === 'object') {
             value = Array.isArray(rawValue)
                 ? rawValue
                       .map((v) =>
@@ -73,7 +92,9 @@ export const buildTableRows = (
                       )
                       .join(', ')
                 : JSON.stringify(rawValue);
-        } else value = String(rawValue);
+        } else {
+            value = String(rawValue);
+        }
 
         return {
             key: String(field),
@@ -82,6 +103,9 @@ export const buildTableRows = (
         };
     });
 
+/**
+ * Build rows for the current ticket
+ */
 export const buildCurrentTicketRows = (
     ticket: ITicket,
     displayFieldIds: Array<string | number>,
@@ -107,19 +131,21 @@ export const buildCurrentTicketRows = (
         satisfaction_comment: satisfactionComment,
     };
 
-    // Add custom fields to flat structure
+    // Add custom fields
     ticket.custom_fields?.forEach((cf) => {
         flatTicket[cf.id] = cf.value;
         flatTicket[String(cf.id)] = cf.value;
     });
 
-    // If displayFieldIds is empty, show all fields
     const fieldsToDisplay =
         displayFieldIds.length > 0 ? displayFieldIds : Object.keys(flatTicket);
 
     return buildTableRows(flatTicket, fieldsToDisplay, ticketFieldLabels);
 };
 
+/**
+ * Build grouped rows for the DataGrid
+ */
 export const buildGroupedRows = (
     currentTicket: ITicket,
     legacyFieldIds: Array<string | number>,

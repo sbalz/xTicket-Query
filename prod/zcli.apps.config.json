@@ -7,8 +7,7 @@
             "id",
             "created_at",
             "updated_at",
-            "recipient",
-            29790335206813,
+            29790311319581,
             29790308969373,
             "satisfaction_score"
         ],
@@ -17,9 +16,9 @@
             "created_at",
             "updated_at",
             "recipient",
-            "satisfaction_score",
-            8800117621905
+            8800117621905,
+            "satisfaction_score"
         ],
-        "Display Legacy Merges Field IDs": ["id", "ticket_id", "ticket_ids"]
+        "Display Legacy Merges Field IDs": ["ticket_id", "ticket_ids"]
     }
 }

@@ -21,7 +21,6 @@ body,
         Arial,
         sans-serif;
 
-    font-size: 14px; /* Base font size for the application */
     background-color: #fff; /* Set default background color */
     color: #293239; /* Set default text color */
     overflow-x: hidden; /* Prevent horizontal scroll */

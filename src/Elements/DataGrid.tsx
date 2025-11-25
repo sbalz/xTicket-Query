@@ -46,10 +46,7 @@ export default function DataGrid({
     }, [settings, ticket, ticketFieldLabels, legacyData, mergeData]);
 
     return (
-        <div
-            ref={containerRef}
-            style={{height: '100%', padding: 8, overflow: 'auto'}}
-        >
+        <div ref={containerRef}>
             <Table
                 groupedData={groupedRows}
                 merges={mergesMap}

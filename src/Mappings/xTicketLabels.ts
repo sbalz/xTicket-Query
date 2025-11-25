@@ -37,11 +37,11 @@ export const LEGACY_FIELD_LABELS: Record<string | number, string> = {
     'via.source.from.channel': 'Ursprünglicher Kanal',
     'via.source.rel': 'Beziehung',
     raw_subject: 'Roh-Betreff',
-    recipient: 'Empfänger',
+    recipient: 'Kanal',
     description: 'Beschreibung',
     generated_timestamp: 'Generierter Zeitstempel',
-    satisfaction_score: 'Zufriedenheitsbewertung',
-    satisfaction_comment: 'Kommentar zur Zufriedenheit',
+    satisfaction_score: 'CSAT-Status',
+    satisfaction_comment: 'CSAT-Kommentar',
 
     // Numerische Felder (übersetzt)
     23153036131473: 'Alle Ticketdaten verfügbar',
