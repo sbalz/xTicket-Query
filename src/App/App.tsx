@@ -25,6 +25,7 @@ export default function App(): JSX.Element {
                     settings: metaSettings = {},
                     title: appTitle = 'xTicket Query',
                 } = (await client.metadata()) ?? {};
+
                 setAppTitle(appTitle);
 
                 const legacyTicketDataFieldId =
@@ -46,13 +47,13 @@ export default function App(): JSX.Element {
                     legacyTicketMergesFieldId,
                 ].filter(Boolean);
 
-                // Fetch current ticket with custom fields
+                // Fetch current ticket
                 const ticket = await getCurrentTicket(allFieldIds);
                 console.log('🚀 Current Ticket:', ticket);
                 if (!ticket) return logMessage('No ticket in context.');
                 setTicketPayload(ticket);
 
-                // Extract legacy & merge data
+                // Legacy and merge data
                 const legacy = getLegacyTicketData(ticket, {
                     legacyTicketDataFieldId,
                     legacyTicketMergesFieldId,
@@ -82,6 +83,7 @@ export default function App(): JSX.Element {
                 const labels: Record<string, string> = {};
                 fieldDefs.ticket_fields.forEach((f: any) => {
                     labels[`custom_field_${f.id}`] = f.title;
+                    labels[f.id] = f.title; // Also add plain ID mapping
                 });
                 setTicketFieldLabels(labels);
 
@@ -108,11 +110,10 @@ export default function App(): JSX.Element {
         initializeApp();
     }, []);
 
-    if (!settings || !ticketPayload || !Object.keys(legacyData).length) {
+    // Allow rendering once we have settings and ticket, even if legacy data is empty
+    if (!settings || !ticketPayload) {
         return (
-            <div style={{padding: 12, fontSize: 13}}>
-                Loading Legacy Ticket Data…
-            </div>
+            <div style={{padding: 12, fontSize: 13}}>Loading Ticket Data…</div>
         );
     }
 

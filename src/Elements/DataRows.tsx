@@ -7,51 +7,38 @@ import type {
 import {LEGACY_FIELD_LABELS} from '../Utils/xTicketLabels';
 import {LEGACY_MERGE_FIELD_LABELS} from '../Utils/xMergeLabels';
 
-// Flatten nested objects recursively
-export const flattenObject = (obj: any, prefix = ''): Record<string, any> => {
-    if (!obj || typeof obj !== 'object') return {[prefix]: obj};
-    let result: Record<string, any> = {};
-    for (const key of Object.keys(obj)) {
-        const value = obj[key];
-        const newKey = prefix ? `${prefix}.${key}` : key;
-        if (value && typeof value === 'object' && !Array.isArray(value)) {
-            Object.assign(result, flattenObject(value, newKey));
-        } else {
-            result[newKey] = value;
-        }
-    }
-    return result;
-};
-
 export const mapTicketToPayload = (
     ticket: Partial<ITicket> & {custom_fields?: ICustomField[]},
     fieldIds: Array<number | string>,
-): ITicket => ({
-    id: ticket.id!,
-    subject: ticket.subject ?? '',
-    custom_fields: (ticket.custom_fields ?? [])
-        .filter(
-            (cf) =>
-                fieldIds.includes(cf.id) || fieldIds.includes(String(cf.id)),
-        )
-        .map((cf) => ({id: Number(cf.id), value: cf.value})),
-});
+): ITicket => {
+    // Don't filter custom_fields here - return all of them
+    // The filtering should happen in buildGroupedRows instead
+    return {
+        id: ticket.id ?? 0,
+        subject: ticket.subject ?? '',
+        created_at: ticket.created_at ?? '',
+        updated_at: ticket.updated_at ?? '',
+        custom_fields: (ticket.custom_fields ?? []).map((cf) => ({
+            id: Number(cf.id),
+            value: cf.value,
+        })),
+    };
+};
 
 export const parseFieldValue = (value: unknown): Record<string, any> => {
     if (value == null) return {};
     if (typeof value === 'string') {
         try {
             const parsed = JSON.parse(value);
-            if (parsed && typeof parsed === 'object')
-                return flattenObject(parsed);
-            return {value: parsed};
+            return parsed && typeof parsed === 'object'
+                ? parsed
+                : {value: parsed};
         } catch {
             return {value};
         }
     }
     if (Array.isArray(value)) return {array: value};
-    if (typeof value === 'object') return flattenObject(value);
-    return {value};
+    return typeof value === 'object' ? (value as Record<string, any>) : {value};
 };
 
 export const buildMergeMap = (
@@ -62,11 +49,10 @@ export const buildMergeMap = (
     const map: Record<string, string> = {};
     if (mergesObj?.ticket_id)
         map[String(mergesObj.ticket_id)] = String(ticketId);
-    if (Array.isArray(mergesObj?.ticket_ids)) {
-        mergesObj.ticket_ids.forEach((id) => {
-            map[String(id)] = String(ticketId);
-        });
-    }
+    if (Array.isArray(mergesObj?.ticket_ids))
+        mergesObj.ticket_ids.forEach(
+            (id) => (map[String(id)] = String(ticketId)),
+        );
     if (dataObj?.id) map[String(dataObj.id)] = String(ticketId);
     return map;
 };
@@ -79,7 +65,6 @@ export const buildTableRows = (
     fieldIds.map((field) => {
         const rawValue = obj?.[field] ?? obj?.[String(field)] ?? '-';
         let value: string;
-
         if (rawValue == null) value = '-';
         else if (typeof rawValue === 'object') {
             value = Array.isArray(rawValue)
@@ -98,6 +83,31 @@ export const buildTableRows = (
         };
     });
 
+export const buildCurrentTicketRows = (
+    ticket: ITicket,
+    displayFieldIds: Array<string | number>,
+    ticketFieldLabels: Record<string, string>,
+): ITableRow[] => {
+    const flatTicket: Record<string, any> = {
+        id: ticket.id,
+        created_at: ticket.created_at,
+        updated_at: ticket.updated_at,
+        subject: ticket.subject,
+    };
+
+    // Add custom fields to flat structure
+    ticket.custom_fields?.forEach((cf) => {
+        flatTicket[cf.id] = cf.value;
+        flatTicket[String(cf.id)] = cf.value;
+    });
+
+    // If displayFieldIds is empty, show all fields
+    const fieldsToDisplay =
+        displayFieldIds.length > 0 ? displayFieldIds : Object.keys(flatTicket);
+
+    return buildTableRows(flatTicket, fieldsToDisplay, ticketFieldLabels);
+};
+
 export const buildGroupedRows = (
     currentTicket: ITicket,
     legacyFieldIds: Array<string | number>,
@@ -109,11 +119,9 @@ export const buildGroupedRows = (
 ): IGroupedRows[] => [
     {
         group: 'Current Ticket Data',
-        rows: buildTableRows(
+        rows: buildCurrentTicketRows(
             currentTicket,
-            displayCurrentFieldIds.length
-                ? displayCurrentFieldIds
-                : Object.keys(currentTicket),
+            displayCurrentFieldIds,
             ticketFieldLabels,
         ),
     },
@@ -121,7 +129,7 @@ export const buildGroupedRows = (
         group: 'Legacy Ticket Data',
         rows: buildTableRows(
             legacyDataObj,
-            legacyFieldIds,
+            legacyFieldIds.length ? legacyFieldIds : Object.keys(legacyDataObj),
             LEGACY_FIELD_LABELS,
         ),
     },
@@ -129,7 +137,7 @@ export const buildGroupedRows = (
         group: 'Merge Data',
         rows: buildTableRows(
             mergeDataObj,
-            mergeFieldIds,
+            mergeFieldIds.length ? mergeFieldIds : Object.keys(mergeDataObj),
             LEGACY_MERGE_FIELD_LABELS,
         ),
     },

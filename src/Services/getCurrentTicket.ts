@@ -6,7 +6,6 @@ export const getCurrentTicket = async (
     allFieldIds: Array<number | string>,
 ): Promise<ITicket | null> => {
     try {
-        // Get ticket ID from context
         const context = await client?.context();
         const ticketId = context?.ticketId;
         if (!ticketId) {
@@ -14,7 +13,6 @@ export const getCurrentTicket = async (
             return null;
         }
 
-        // Fetch full ticket from Zendesk API
         const response = await client?.request({
             url: `/api/v2/tickets/${ticketId}.json`,
             type: 'GET',
@@ -22,12 +20,8 @@ export const getCurrentTicket = async (
         });
 
         const ticket = response.ticket;
-        if (!ticket) {
-            console.error('Ticket API returned no ticket.');
-            return null;
-        }
+        if (!ticket) return null;
 
-        // Map ticket to payload with relevant fields
         return mapTicketToPayload(ticket, allFieldIds);
     } catch (err) {
         console.error('Error fetching current ticket:', err);

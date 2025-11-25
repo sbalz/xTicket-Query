@@ -1,26 +1,41 @@
 import {parseFieldValue} from '../Elements/DataRows';
 import type {AppSettings, ITicket} from '../declarations';
 
+const flattenObject = (obj: any, prefix = ''): Record<string, any> => {
+    if (obj == null) return {};
+    if (typeof obj !== 'object') return {[prefix]: obj};
+
+    return Object.keys(obj).reduce(
+        (acc, key) => {
+            const value = obj[key];
+            const newKey = prefix ? `${prefix}.${key}` : key;
+            if (
+                typeof value === 'object' &&
+                value !== null &&
+                !Array.isArray(value)
+            ) {
+                Object.assign(acc, flattenObject(value, newKey));
+            } else if (Array.isArray(value)) {
+                acc[newKey] = value
+                    .map((v) => (typeof v === 'object' ? JSON.stringify(v) : v))
+                    .join(', ');
+            } else {
+                acc[newKey] = value;
+            }
+            return acc;
+        },
+        {} as Record<string, any>,
+    );
+};
+
 export const getLegacyTicketData = (
     ticket: ITicket,
     settings: AppSettings,
 ): Record<string, any> => {
-    const legacyDataFieldId = Number(settings.legacyTicketDataFieldId);
-
     const field = ticket.custom_fields?.find(
-        (cf) => Number(cf.id) === legacyDataFieldId,
+        (cf) => cf.id === settings.legacyTicketDataFieldId,
     );
     if (!field) return {};
-
     const parsed = parseFieldValue(field.value);
-
-    // Merge top-level custom_fields safely
-    const cfMap: Record<string, any> = {};
-    (ticket.custom_fields ?? []).forEach((cf) => {
-        cfMap[String(cf.id)] = cf.value;
-    });
-
-    const result = {...parsed, ...cfMap};
-    console.log('Parsed Legacy Data:', result);
-    return result;
+    return flattenObject(parsed);
 };

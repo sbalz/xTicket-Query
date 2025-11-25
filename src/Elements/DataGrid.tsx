@@ -1,7 +1,7 @@
 import React, {useEffect, useState, useRef} from 'react';
 import Table from '../Components/Table';
 import {resizeApp, registerComponent} from '../Utils/ResizeApp';
-import {buildMergeMap, buildGroupedRows} from '../Elements/DataRows';
+import {buildMergeMap, buildGroupedRows} from './DataRows';
 import type {
     AppSettings,
     ITicket,
@@ -33,6 +33,7 @@ export default function DataGrid({
                     settings.displayCurrentDataFieldIds,
                 ),
             );
+
             setMergesMap(buildMergeMap(ticket.id, legacyData, mergeData));
 
             if (containerRef.current) {
