@@ -87,7 +87,6 @@ export default function DataGrid({
                 groupedData={groupedRows}
                 merges={mergesMap}
                 externalIdMap={externalIdMap}
-                extIdSource={`/agent/tickets/{{ticket_id}}`}
             />
         </div>
     );

@@ -49,23 +49,29 @@ export const buildExternalIdToCurrentIdMap = async (
 };
 
 /**
- * Extract external IDs from merge data
+ * Extract external IDs from flattened merge data
+ * After flattening, the structure uses dot notation:
+ * "0.via.source.from.ticket_id" and "0.via.source.from.ticket_ids"
  */
 export const extractExternalIdsFromMergeData = (
     mergeData: Record<string, any>,
 ): (string | number)[] => {
     const externalIds: Set<string | number> = new Set();
 
-    // Check for ticket_id
-    if (mergeData?.via?.source?.from?.ticket_id) {
-        externalIds.add(mergeData.via.source.from.ticket_id);
+    // Check for flattened ticket_id field
+    const ticketId = mergeData['0.via.source.from.ticket_id'];
+    if (ticketId && ticketId !== null) {
+        externalIds.add(ticketId);
     }
 
-    // Check for ticket_ids array
-    if (Array.isArray(mergeData?.via?.source?.from?.ticket_ids)) {
-        mergeData.via.source.from.ticket_ids.forEach((id: string | number) => {
-            externalIds.add(id);
-        });
+    // Check for flattened ticket_ids field (comes as comma-separated string after flattening)
+    const ticketIds = mergeData['0.via.source.from.ticket_ids'];
+    if (ticketIds) {
+        const ids = String(ticketIds)
+            .split(',')
+            .map((id) => id.trim())
+            .filter(Boolean);
+        ids.forEach((id) => externalIds.add(id));
     }
 
     return Array.from(externalIds);
