@@ -42,20 +42,21 @@ export interface AppSettings {
 export interface ITicket {
     readonly id: string | number;
     readonly external_id?: string | null;
-    readonly subject: string;
-    readonly description?: string;
-    readonly status?: string;
-    readonly type?: string;
-    readonly priority?: string;
+    readonly via?: ITicketVia;
     readonly created_at?: string;
     readonly updated_at?: string;
+    readonly type?: string;
+    readonly subject: string;
+    readonly description?: string;
+    readonly priority?: string;
+    readonly status?: string;
+    readonly recipient?: string | null;
     readonly problem_id?: number | null;
     readonly is_public?: boolean;
     readonly tags?: string[];
-    readonly via?: ITicketVia;
     readonly custom_fields?: ICustomField[];
-    readonly custom_status_id?: number;
-    readonly encoded_id?: string;
+    readonly followup_ids?: number[];
+    readonly support_type?: string;
 }
 
 export interface ITicketVia {
@@ -92,8 +93,9 @@ export interface ITableRow {
 }
 
 export interface ITableProps {
-    readonly data: ITableRow[];
-    readonly minWidth?: number;
+    groupedData: IGroupedRows[];
+    merges?: Record<string, string>;
+    extIdSource?: string;
 }
 
 /* ----------------- DataGrid Props ----------------- */

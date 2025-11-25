@@ -11,8 +11,6 @@ export const mapTicketToPayload = (
     ticket: Partial<ITicket> & {custom_fields?: ICustomField[]},
     fieldIds: Array<number | string>,
 ): ITicket => {
-    // Don't filter custom_fields here - return all of them
-    // The filtering should happen in buildGroupedRows instead
     return {
         id: ticket.id ?? 0,
         subject: ticket.subject ?? '',

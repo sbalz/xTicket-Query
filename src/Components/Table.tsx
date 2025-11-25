@@ -1,23 +1,20 @@
 import React, {useCallback} from 'react';
 import styled from 'styled-components';
 import {Table as GardenTable} from '@zendeskgarden/react-tables';
-import type {IGroupedRows} from '../declarations';
+import type {IGroupedRows, ITableProps} from '../declarations';
 
 const TableContainer = styled.div`
     width: 100%;
     overflow-x: auto;
-    margin-bottom: 8px;
 `;
 
 const TitleCell = styled(GardenTable.Cell)`
     width: 40%;
     font-weight: 600;
-    font-size: 13px;
 `;
 
 const ValueCell = styled(GardenTable.Cell)<{clickable?: boolean}>`
     width: 60%;
-    font-size: 13px;
     cursor: ${({clickable}) => (clickable ? 'pointer' : 'default')};
     color: ${({clickable}) => (clickable ? '#1f73b7' : 'inherit')};
     &:hover {
@@ -25,13 +22,7 @@ const ValueCell = styled(GardenTable.Cell)<{clickable?: boolean}>`
     }
 `;
 
-interface TableProps {
-    groupedData: IGroupedRows[];
-    merges?: Record<string, string>;
-    extIdSource?: string;
-}
-
-const Table: React.FC<TableProps> = ({
+const Table: React.FC<ITableProps> = ({
     groupedData,
     merges = {},
     extIdSource,
