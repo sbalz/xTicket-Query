@@ -156,7 +156,7 @@ export const buildGroupedRows = (
     displayCurrentFieldIds: Array<string | number> = [],
 ): IGroupedRows[] => [
     {
-        group: 'Current Ticket Data',
+        group: 'Current System Ticket Data',
         rows: buildCurrentTicketRows(
             currentTicket,
             displayCurrentFieldIds,
@@ -164,7 +164,7 @@ export const buildGroupedRows = (
         ),
     },
     {
-        group: 'Legacy Ticket Data',
+        group: 'Legacy System Ticket Data',
         rows: buildTableRows(
             legacyDataObj,
             legacyFieldIds.length ? legacyFieldIds : Object.keys(legacyDataObj),
@@ -172,7 +172,7 @@ export const buildGroupedRows = (
         ),
     },
     {
-        group: 'Merge Data',
+        group: 'Merged Ticket ID(s) (Lookup)',
         rows: buildTableRows(
             mergeDataObj,
             mergeFieldIds.length ? mergeFieldIds : Object.keys(mergeDataObj),
