@@ -99,7 +99,10 @@ export interface ITableProps {
 /* ----------------- DataGrid Props ----------------- */
 export interface IDataGridProps {
     readonly settings: AppSettings;
-    readonly account: string;
+    readonly ticket: ITicket;
+    readonly ticketFieldLabels: Record<string, string>;
+    readonly legacyData: Record<string, any>;
+    readonly mergeData: Record<string, any>;
 }
 
 /* ----------------- DataTable Props ----------------- */

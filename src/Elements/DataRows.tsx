@@ -88,12 +88,15 @@ export const buildGroupedRows = (
     mergeDataObj: Record<string, any>,
     mergeFieldIds: Array<string | number>,
     ticketFieldLabels: Record<string, string>,
+    displayCurrentFieldIds: Array<string | number> = [],
 ): IGroupedRows[] => [
     {
         group: 'Current Ticket Data',
         rows: buildTableRows(
             currentTicket,
-            Object.keys(currentTicket) as Array<string | number>,
+            displayCurrentFieldIds.length
+                ? displayCurrentFieldIds
+                : Object.keys(currentTicket),
             ticketFieldLabels,
         ),
     },

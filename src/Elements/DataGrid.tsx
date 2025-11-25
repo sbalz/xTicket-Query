@@ -1,51 +1,39 @@
 import React, {useEffect, useState, useRef} from 'react';
 import Table from '../Components/Table';
 import {resizeApp, registerComponent} from '../Utils/ResizeApp';
-import {
-    parseFieldValue,
-    buildMergeMap,
-    buildGroupedRows,
-} from '../Elements/DataRows';
-import type {AppSettings, ITicket, IGroupedRows} from '../declarations';
-
-interface DataGridProps {
-    settings: AppSettings;
-    ticket: ITicket;
-    ticketFieldLabels: Record<string, string>;
-}
+import {buildMergeMap, buildGroupedRows} from '../Elements/DataRows';
+import type {
+    AppSettings,
+    ITicket,
+    IDataGridProps,
+    IGroupedRows,
+} from '../declarations';
 
 export default function DataGrid({
     settings,
     ticket,
     ticketFieldLabels,
-}: DataGridProps) {
+    legacyData,
+    mergeData,
+}: IDataGridProps) {
     const [groupedRows, setGroupedRows] = useState<IGroupedRows[]>([]);
     const [mergesMap, setMergesMap] = useState<Record<string, string>>({});
     const containerRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
         const processTicketData = () => {
-            const dataField = ticket.custom_fields?.find(
-                (cf) => cf.id === settings.legacyTicketDataFieldId,
-            );
-            const mergesField = ticket.custom_fields?.find(
-                (cf) => cf.id === settings.legacyTicketMergesFieldId,
-            );
-
-            const dataObj = parseFieldValue(dataField?.value);
-            const mergesObj = parseFieldValue(mergesField?.value);
-
             setGroupedRows(
                 buildGroupedRows(
-                    ticket, // current ticket
+                    ticket,
                     settings.displayLegacyDataFieldIds,
-                    dataObj, // legacy ticket data
-                    mergesObj, // merge data
+                    legacyData,
+                    mergeData,
                     settings.displayLegacyMergesFieldIds,
                     ticketFieldLabels,
+                    settings.displayCurrentDataFieldIds,
                 ),
             );
-            setMergesMap(buildMergeMap(ticket.id, dataObj, mergesObj));
+            setMergesMap(buildMergeMap(ticket.id, legacyData, mergeData));
 
             if (containerRef.current) {
                 resizeApp(containerRef.current);
@@ -54,7 +42,7 @@ export default function DataGrid({
         };
 
         processTicketData();
-    }, [settings, ticket, ticketFieldLabels]);
+    }, [settings, ticket, ticketFieldLabels, legacyData, mergeData]);
 
     return (
         <div

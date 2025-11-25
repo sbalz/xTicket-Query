@@ -2,8 +2,10 @@ import React, {useEffect, useState} from 'react';
 import DataGrid from '../Elements/DataGrid';
 import client from '../Utils/ZAFClient';
 import {logMessage, setAppTitle} from '../Utils/ConsoleLog';
-import {mapTicketToPayload} from '../Elements/DataRows';
 import type {AppSettings, ITicket} from '../declarations';
+import {getCurrentTicket} from '../Services/getCurrentTicket';
+import {getLegacyTicketData} from '../Services/getLegacyTicketData';
+import {getLegacyMergeData} from '../Services/getLegacyMergeData';
 
 export default function App(): JSX.Element {
     const [settings, setSettings] = useState<AppSettings | null>(null);
@@ -11,6 +13,8 @@ export default function App(): JSX.Element {
     const [ticketFieldLabels, setTicketFieldLabels] = useState<
         Record<string, string>
     >({});
+    const [legacyData, setLegacyData] = useState<Record<string, any>>({});
+    const [mergeData, setMergeData] = useState<Record<string, any>>({});
 
     useEffect(() => {
         const initializeApp = async () => {
@@ -42,14 +46,36 @@ export default function App(): JSX.Element {
                     legacyTicketMergesFieldId,
                 ].filter(Boolean);
 
-                // Fetch current ticket
-                const currentTicketData = await client.get('ticket');
-                const ticket = currentTicketData.ticket;
+                // Fetch current ticket with custom fields
+                const ticket = await getCurrentTicket(allFieldIds);
+                console.log('🚀 Current Ticket:', ticket);
                 if (!ticket) return logMessage('No ticket in context.');
+                setTicketPayload(ticket);
 
-                setTicketPayload(mapTicketToPayload(ticket, allFieldIds));
+                // Extract legacy & merge data
+                const legacy = getLegacyTicketData(ticket, {
+                    legacyTicketDataFieldId,
+                    legacyTicketMergesFieldId,
+                    displayLegacyDataFieldIds: displayLegacyFieldIds,
+                    displayLegacyMergesFieldIds: displayMergeFieldIds,
+                    title: appTitle,
+                });
 
-                // Fetch Ticket Fields API for dynamic labels
+                const merge = getLegacyMergeData(ticket, {
+                    legacyTicketDataFieldId,
+                    legacyTicketMergesFieldId,
+                    displayLegacyDataFieldIds: displayLegacyFieldIds,
+                    displayLegacyMergesFieldIds: displayMergeFieldIds,
+                    title: appTitle,
+                });
+
+                console.log('🚀 Legacy Data:', legacy);
+                console.log('🚀 Merge Data:', merge);
+
+                setLegacyData(legacy);
+                setMergeData(merge);
+
+                // Ticket field labels
                 const fieldDefs = await client.request(
                     '/api/v2/ticket_fields.json',
                 );
@@ -59,12 +85,12 @@ export default function App(): JSX.Element {
                 });
                 setTicketFieldLabels(labels);
 
-                // Set settings
                 setSettings({
                     legacyTicketDataFieldId: Number(legacyTicketDataFieldId),
                     legacyTicketMergesFieldId: Number(
                         legacyTicketMergesFieldId,
                     ),
+                    displayCurrentDataFieldIds: displayCurrentFieldIds,
                     displayLegacyDataFieldIds: displayLegacyFieldIds,
                     displayLegacyMergesFieldIds: displayMergeFieldIds,
                     title: appTitle,
@@ -95,6 +121,8 @@ export default function App(): JSX.Element {
             settings={settings}
             ticket={ticketPayload}
             ticketFieldLabels={ticketFieldLabels}
+            legacyData={legacyData}
+            mergeData={mergeData}
         />
     );
 }
