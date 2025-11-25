@@ -40,6 +40,8 @@ export const LEGACY_FIELD_LABELS: Record<string | number, string> = {
     recipient: 'Empfänger',
     description: 'Beschreibung',
     generated_timestamp: 'Generierter Zeitstempel',
+    satisfaction_score: 'Zufriedenheitsbewertung',
+    satisfaction_comment: 'Kommentar zur Zufriedenheit',
 
     // Numerische Felder (übersetzt)
     23153036131473: 'Alle Ticketdaten verfügbar',
