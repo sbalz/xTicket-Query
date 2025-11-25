@@ -63,6 +63,7 @@ export const buildTableRows = (
     fieldIds.map((field) => {
         const rawValue = obj?.[field] ?? obj?.[String(field)] ?? '-';
         let value: string;
+
         if (rawValue == null) value = '-';
         else if (typeof rawValue === 'object') {
             value = Array.isArray(rawValue)

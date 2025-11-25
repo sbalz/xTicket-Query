@@ -9,19 +9,17 @@ const flattenObject = (obj: any, prefix = ''): Record<string, any> => {
         (acc, key) => {
             const value = obj[key];
             const newKey = prefix ? `${prefix}.${key}` : key;
-            if (
-                typeof value === 'object' &&
-                value !== null &&
-                !Array.isArray(value)
-            ) {
-                Object.assign(acc, flattenObject(value, newKey));
-            } else if (Array.isArray(value)) {
+
+            if (Array.isArray(value)) {
                 acc[newKey] = value
                     .map((v) => (typeof v === 'object' ? JSON.stringify(v) : v))
                     .join(', ');
+            } else if (typeof value === 'object' && value !== null) {
+                Object.assign(acc, flattenObject(value, newKey));
             } else {
                 acc[newKey] = value;
             }
+
             return acc;
         },
         {} as Record<string, any>,
@@ -36,6 +34,8 @@ export const getLegacyMergeData = (
         (cf) => cf.id === settings.legacyTicketMergesFieldId,
     );
     if (!field) return {};
+
     const parsed = parseFieldValue(field.value);
+
     return flattenObject(parsed);
 };
