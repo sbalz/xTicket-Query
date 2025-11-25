@@ -5,7 +5,7 @@ export const LEGACY_FIELD_LABELS: Record<string | number, string> = {
     type: 'Typ',
     priority: 'Priorität',
     created_at: 'Erstellt am',
-    updated_at: 'Aktualisiert am',
+    updated_at: 'Letzte Aktualisierung',
     requester_id: 'Anfragender',
     submitter_id: 'Einreichender',
     assignee_id: 'Zugewiesen an',
