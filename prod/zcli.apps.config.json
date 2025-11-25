@@ -16,8 +16,7 @@
             "created_at",
             "updated_at",
             "recipient",
-            8800117621905,
-            "satisfaction_score"
+            8800117621905
         ],
         "Display Legacy Merges Field IDs": ["0.via.source.from.ticket_ids"]
     }
