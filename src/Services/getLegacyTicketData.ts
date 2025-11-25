@@ -7,23 +7,20 @@ export const getLegacyTicketData = (
 ): Record<string, any> => {
     const legacyDataFieldId = Number(settings.legacyTicketDataFieldId);
 
-    if (!ticket.custom_fields?.length) {
-        console.warn('Ticket has no custom fields.');
-        return {};
-    }
-
-    const field = ticket.custom_fields.find(
+    const field = ticket.custom_fields?.find(
         (cf) => Number(cf.id) === legacyDataFieldId,
     );
-
-    if (!field) {
-        console.warn(
-            `Legacy Ticket Data field not found (ID: ${legacyDataFieldId})`,
-        );
-        return {};
-    }
+    if (!field) return {};
 
     const parsed = parseFieldValue(field.value);
-    console.log('Parsed Legacy Data:', parsed);
-    return parsed;
+
+    // Merge top-level custom_fields safely
+    const cfMap: Record<string, any> = {};
+    (ticket.custom_fields ?? []).forEach((cf) => {
+        cfMap[String(cf.id)] = cf.value;
+    });
+
+    const result = {...parsed, ...cfMap};
+    console.log('Parsed Legacy Data:', result);
+    return result;
 };

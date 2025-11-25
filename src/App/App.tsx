@@ -108,7 +108,7 @@ export default function App(): JSX.Element {
         initializeApp();
     }, []);
 
-    if (!settings || !ticketPayload) {
+    if (!settings || !ticketPayload || !Object.keys(legacyData).length) {
         return (
             <div style={{padding: 12, fontSize: 13}}>
                 Loading Legacy Ticket Data…

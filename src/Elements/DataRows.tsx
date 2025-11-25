@@ -7,6 +7,22 @@ import type {
 import {LEGACY_FIELD_LABELS} from '../Utils/xTicketLabels';
 import {LEGACY_MERGE_FIELD_LABELS} from '../Utils/xMergeLabels';
 
+// Flatten nested objects recursively
+export const flattenObject = (obj: any, prefix = ''): Record<string, any> => {
+    if (!obj || typeof obj !== 'object') return {[prefix]: obj};
+    let result: Record<string, any> = {};
+    for (const key of Object.keys(obj)) {
+        const value = obj[key];
+        const newKey = prefix ? `${prefix}.${key}` : key;
+        if (value && typeof value === 'object' && !Array.isArray(value)) {
+            Object.assign(result, flattenObject(value, newKey));
+        } else {
+            result[newKey] = value;
+        }
+    }
+    return result;
+};
+
 export const mapTicketToPayload = (
     ticket: Partial<ITicket> & {custom_fields?: ICustomField[]},
     fieldIds: Array<number | string>,
@@ -26,15 +42,16 @@ export const parseFieldValue = (value: unknown): Record<string, any> => {
     if (typeof value === 'string') {
         try {
             const parsed = JSON.parse(value);
-            return parsed && typeof parsed === 'object'
-                ? parsed
-                : {value: parsed};
+            if (parsed && typeof parsed === 'object')
+                return flattenObject(parsed);
+            return {value: parsed};
         } catch {
             return {value};
         }
     }
     if (Array.isArray(value)) return {array: value};
-    return typeof value === 'object' ? (value as Record<string, any>) : {value};
+    if (typeof value === 'object') return flattenObject(value);
+    return {value};
 };
 
 export const buildMergeMap = (
